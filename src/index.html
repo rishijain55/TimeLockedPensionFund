@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time-Locked Deposits</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <h1>Time-Locked Deposits</h1>
+    <div>
+        <button id="connectWallet">Connect Wallet</button>
+    </div>
+    <div id="walletInfo"></div>
+    <div>
+        <label for="depositAmount">Deposit Amount (in ETH):</label>
+        <input type="text" id="depositAmount" placeholder="Enter deposit amount">
+    </div>
+    <div>
+        <label for="lockDuration">Lock Duration (in seconds):</label>
+        <input type="text" id="lockDuration" placeholder="Enter lock duration">
+    </div>
+    <button id="deposit">Deposit</button>
+    <div id="depositInfo"></div>
+    <button id="redeem">Redeem</button>
+    <div id="redeemInfo"></div>
+</body>
+</html>
