@@ -83,6 +83,48 @@
                 <div id="depositsContainer"></div>
             </div>
         </div>
+
+        <!-- Add this section after the existing deposit section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <h4>Personal Funds</h4>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="personalDepositAmount">Deposit Amount (in ETH):</label>
+                    <input type="text" class="form-control" id="personalDepositAmount" placeholder="Enter deposit amount">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="personalRedeemDate">Redeem Date:</label>
+                    <input type="date" class="form-control" id="personalRedeemDate">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="personalRedeemTime">Redeem Time:</label>
+                    <input type="time" class="form-control" id="personalRedeemTime">
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-success" id="personalDeposit">Deposit</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="personalDepositInfo"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="personalDepositsContainer"></div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -49,6 +49,10 @@ const contractABI = [
       {
         "name": "lockUntil",
         "type": "uint256"
+      },
+      {
+        "name": "pension",
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -152,13 +156,18 @@ const contractABI = [
   },
   {
     "constant": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "pension",
+        "type": "bool"
+      }
+    ],
     "name": "deposit",
     "outputs": [],
     "payable": true,
     "stateMutability": "payable",
     "type": "function",
-    "signature": "0xd0e30db0"
+    "signature": "0xc57273c2"
   },
   {
     "constant": true,
@@ -281,6 +290,30 @@ const contractABI = [
     "stateMutability": "view",
     "type": "function",
     "signature": "0xa60bae6e"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "isDepositPensionRelated",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function",
+    "signature": "0x1473ff6d"
   }
 ];
 
@@ -306,7 +339,7 @@ async function connectToEthereum() {
 connectToEthereum();
 
 async function connectContract() {
-    const contractAddress = "0x45e8D8EB959B21B96b80bA21aA2451f69B9D6715";
+    const contractAddress = "0xB7A941Ab2Ee915c159f7dAE1386e9C583B827eBd";
     contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
@@ -333,6 +366,7 @@ async function connectWallet() {
         accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         walletInfoDiv.innerHTML = `Connected wallet: ${accounts[0]}`;
         displayDeposits();
+        displayPersonalDeposits();
         checkEmployeeRegistration();
     } catch (error) {
         console.error(error);
@@ -394,7 +428,7 @@ async function deposit() {
     try {
         console.log("Depositing", depositAmount);
         const result = await contract.methods
-            .deposit()
+            .deposit(true)
             .send({ from: accounts[0], value: depositAmount });
 
         //lock the deposit 
@@ -463,12 +497,17 @@ async function displayDeposits() {
             
             const depositAmount = await contract.methods.getDepositAmount(accounts[0], i).call();
             const depositLockUntil = await contract.methods.getDepositLockUntil(accounts[0], i).call();
-
+            let pension = await contract.methods.isDepositPensionRelated(accounts[0], i).call();
+            console.log("pension: ", pension);
+            //continue if the deposit is not pension related
+            if (!pension) {
+                continue;
+            }
 
             console.log("lock is deposited: ", depositLockUntil, "amount: ", depositAmount)
 
             const depositItem = document.createElement("li");
-            depositItem.textContent = `Deposit ${i}: Amount: ${web3.utils.fromWei(depositAmount, "ether")} ETH, Unlock Time: ${new Date(depositLockUntil * 1000).toLocaleString()}`;
+            // depositItem.textContent = `Deposit ${i}: Amount: ${web3.utils.fromWei(depositAmount, "ether")} ETH, Unlock Time: ${new Date(depositLockUntil * 1000).toLocaleString()}`;
 
 
 
@@ -514,6 +553,7 @@ async function redeem(depositIndex) {
 
 
     try {
+
         const result = await contract.methods
             .redeem(depositIndex)
             .send({ from: accounts[0] });
@@ -521,6 +561,7 @@ async function redeem(depositIndex) {
         const amount = result.events.Redeemed.returnValues.amount;
         console.log(`Redeemed ${web3.utils.fromWei(amount, "ether")} ETH`);
         displayDeposits();
+        displayPersonalDeposits();
     } catch (error) {
         console.error(error);
         console.log("Error redeeming");
@@ -536,3 +577,103 @@ async function displayCurrentTime() {
 }
 
 displayCurrentTime();
+
+// Get DOM elements for personal funds
+const personalDepositAmountInput = document.getElementById("personalDepositAmount");
+const personalRedeemDate = document.getElementById("personalRedeemDate");
+const personalRedeemTime = document.getElementById("personalRedeemTime");
+const personalDepositBtn = document.getElementById("personalDeposit");
+const personalDepositInfoDiv = document.getElementById("personalDepositInfo");
+const personalDepositsContainer = document.getElementById("personalDepositsContainer");
+
+// Event listener for personal deposit
+personalDepositBtn.addEventListener("click", personalDeposit);
+
+// Personal deposit function
+async function personalDeposit() {
+    if (!accounts || accounts.length === 0) {
+        alert("Please connect your wallet first!");
+        return;
+    }
+
+    const depositAmount = web3.utils.toWei(personalDepositAmountInput.value, "ether");
+    const redeemDateValue = personalRedeemDate.value;
+    const redeemTimeValue = personalRedeemTime.value;
+    console.log("Redeem date: ", redeemDateValue, "Redeem time: ", redeemTimeValue)
+
+    if (!redeemDateValue || !redeemTimeValue) {
+        alert("Please select a redeem date and time.");
+        return;
+    }
+
+    const redeemDateTime = new Date(`${redeemDateValue}T${redeemTimeValue}`);
+    console.log("Redeem date time: ", redeemDateTime);
+    const lockUntil = Math.floor(redeemDateTime.getTime() / 1000);
+
+    try {
+
+        const result = await contract.methods.deposit(false).send({ from: accounts[0], value: depositAmount });
+        let depositIndex = await contract.methods.getDepositLength(accounts[0]).call();
+        depositIndex = depositIndex - 1;
+        console.log("Depositing", depositAmount, "lockUntil", lockUntil, "depositIndex", depositIndex);
+        await contract.methods.lock(depositIndex, lockUntil).send({ from: accounts[0] });
+        personalDepositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH. Locked until ${redeemDateTime.toLocaleString()}`;
+        displayPersonalDeposits();
+    } catch (error) {
+        console.error(error);
+        personalDepositInfoDiv.innerHTML = "Error depositing personal funds";
+    }
+}
+
+// Display personal deposits function
+async function displayPersonalDeposits() {
+    if (!accounts || accounts.length === 0) {
+        alert("Please connect your wallet first!");
+        return;
+    }
+
+    if (!contract) {
+        alert("Please deploy the contract first!");
+        return;
+    }
+
+    personalDepositsContainer.innerHTML = ""; // Clear previous deposits
+
+    try {
+        const userDepositsLength = await contract.methods.getDepositLength(accounts[0]).call();
+        if (userDepositsLength === 0) {
+            personalDepositsContainer.innerHTML = "No personal deposits found.";
+            return;
+        }
+
+        const depositsList = document.createElement("ul");
+
+        for (let i = 0; i < userDepositsLength; i++) {
+            const depositAmount = await contract.methods.getDepositAmount(accounts[0], i).call();
+            const depositLockUntil = await contract.methods.getDepositLockUntil(accounts[0], i).call();
+            let pension = await contract.methods.isDepositPensionRelated(accounts[0], i).call();
+
+            //continue if the deposit is pension related
+            if (pension) {
+                continue;
+            }
+
+            const depositItem = document.createElement("li");
+            depositItem.textContent = `Personal Deposit ${i}: Amount: ${web3.utils.fromWei(depositAmount, "ether")} ETH, Unlock Time: ${new Date(depositLockUntil * 1000).toLocaleString()}`;
+
+            const redeemBtn = document.createElement("button");
+            redeemBtn.textContent = "Redeem";
+            redeemBtn.addEventListener("click", () => redeem(i));
+
+            depositItem.appendChild(document.createTextNode(" "));
+            depositItem.appendChild(redeemBtn);
+
+            depositsList.appendChild(depositItem);
+        }
+
+        personalDepositsContainer.appendChild(depositsList);
+    } catch (error) {
+        console.error(error);
+        personalDepositsContainer.innerHTML = "Error retrieving personal deposits";
+    }
+}

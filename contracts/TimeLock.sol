@@ -10,6 +10,7 @@ contract TimeLock {
     struct Deposit {
         uint256 amount;
         uint256 lockUntil;
+        bool pension;
     }
 
     mapping(address => Employee) public employees;
@@ -27,9 +28,9 @@ contract TimeLock {
         return employees[account].retirementAge != 0;
     }
 
-    function deposit() external payable {
+    function deposit(bool pension) external payable {
         require(isEmployeeRegistered(msg.sender), "Employee not registered");
-        deposits[msg.sender].push(Deposit(msg.value, 0));
+        deposits[msg.sender].push(Deposit(msg.value, 0, pension));
         emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, 0);
     }
 
@@ -82,5 +83,10 @@ contract TimeLock {
     function getDepositLockUntil(address account, uint256 index) public view returns (uint256) {
         Deposit storage deposit = deposits[account][index];
         return deposit.lockUntil;
+    }
+
+    function isDepositPensionRelated(address account, uint256 index) public view returns (bool) {
+        Deposit storage deposit = deposits[account][index];
+        return deposit.pension;
     }
 }
