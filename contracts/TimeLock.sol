@@ -1,65 +1,45 @@
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.5.0;
-
-// contract TimeLock {
-//     struct Deposit {
-//         uint256 amount;
-//         uint256 lockUntil;
-//     }
-
-//     mapping(address => Deposit) public deposits;
-
-//     event Deposited(address indexed account, uint256 amount, uint256 lockUntil);
-//     event Redeemed(address indexed account, uint256 amount);
-
-//     function deposit() external payable {
-//         deposits[msg.sender] = Deposit(msg.value, 0);
-//         emit Deposited(msg.sender, msg.value, 0);
-//     }
-
-//     function lock(uint256 duration) external {
-//         Deposit storage deposit = deposits[msg.sender];
-//         require(deposit.amount > 0, "No deposit found");
-//         require(deposit.lockUntil == 0, "Already locked");
-
-//         deposit.lockUntil = now + duration;
-//     }
-
-//     function redeem() external {
-//         Deposit storage deposit = deposits[msg.sender];
-//         require(deposit.amount > 0, "No deposit found");
-//         require(now >= deposit.lockUntil, "Still locked");
-
-//         uint256 amount = deposit.amount;
-//         delete deposits[msg.sender];
-
-//         msg.sender.transfer(amount);
-
-//         emit Redeemed(msg.sender, amount);
-//     }
-// }
-
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.5.0;
 
 contract TimeLock {
-
+    struct Employee {
+        string name;
+        uint256 age;
+        uint256 retirementAge;
+    }
 
     struct Deposit {
         uint256 amount;
         uint256 lockUntil;
     }
 
+    mapping(address => Employee) public employees;
     mapping(address => Deposit[]) public deposits;
 
-    event Deposited(address indexed account, uint index, uint256 amount, uint256 lockUntil);
+    event Deposited(address indexed account, uint256 index, uint256 amount, uint256 lockUntil);
     event Redeemed(address indexed account, uint256 amount, uint256 depositIndex);
 
-    function deposit() external payable {
-        deposits[msg.sender].push(Deposit(msg.value, 0));
-        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, 0);
-
+    function registerEmployee(string memory _name, uint256 _age, uint256 _retirementAge) public {
+        require(!isEmployeeRegistered(msg.sender), "Employee already registered");
+        employees[msg.sender] = Employee(_name, _age, _retirementAge);
     }
+
+    function isEmployeeRegistered(address account) public view returns (bool) {
+        return employees[account].retirementAge != 0;
+    }
+
+    function deposit() external payable {
+        require(isEmployeeRegistered(msg.sender), "Employee not registered");
+        uint256 lockUntil = calculateRetirementTimestamp(msg.sender);
+        deposits[msg.sender].push(Deposit(msg.value, lockUntil));
+        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, lockUntil);
+    }
+
+    function calculateRetirementTimestamp(address account) private view returns (uint256) {
+        uint256 ageInSeconds = employees[account].age * 365 days;
+        uint256 retirementAgeInSeconds = employees[account].retirementAge * 365 days;
+        return now + retirementAgeInSeconds - ageInSeconds;
+    }
+
 
     function lock(uint256 depositIndex, uint256 duration) external {
         Deposit[] storage userDeposits = deposits[msg.sender];
@@ -68,24 +48,6 @@ contract TimeLock {
 
         userDeposits[depositIndex].lockUntil = now + duration;
     }
-
-    // function redeem(uint256 depositIndex) external {
-    //     Deposit[] storage userDeposits = deposits[msg.sender];
-    //     require(depositIndex < userDeposits.length, "Invalid deposit index");
-    //     Deposit storage deposit = userDeposits[depositIndex];
-    //     require(deposit.amount > 0, "No deposit found");
-    //     require(now >= deposit.lockUntil, "Still locked");
-
-    //     uint256 amount = deposit.amount;
-    //     delete userDeposits[depositIndex];
-
-    //     msg.sender.transfer(amount);
-
-    //     //delete the deposit
-        
-
-    //     emit Redeemed(msg.sender, amount, depositIndex);
-    // }
 
     function redeem(uint256 depositIndex) external {
         Deposit[] storage userDeposits = deposits[msg.sender];

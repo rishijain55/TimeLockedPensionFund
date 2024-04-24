@@ -23,7 +23,7 @@
         </div>
         <div class="row mb-3">
             <div class="col-12">
-                <button class="btn btn-primary" id="connectWallet">Connect Wallet</button>
+                <button class="btn btn-primary" id="connectWallet">Connect</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -32,16 +32,39 @@
             </div>
         </div>
         <div class="row mb-3">
+            <div class="col-12">
+                <div id="employeeInfo" style="display: none;">
+                    <h4>Employee Credentials:</h4>
+                    <p><strong>Name:</strong> <span id="employeeName"></span></p>
+                    <p><strong>Age:</strong> <span id="employeeAge"></span></p>
+                    <p><strong>Retirement Age:</strong> <span id="retirementAge"></span></p>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <form id="registerEmployeeForm">
+                    <div class="form-group">
+                        <label for="employeeNameInput">Employee Name:</label>
+                        <input type="text" class="form-control" id="employeeNameInput" placeholder="Enter employee name">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeAgeInput">Employee Age:</label>
+                        <input type="number" class="form-control" id="employeeAgeInput" placeholder="Enter employee age">
+                    </div>
+                    <div class="form-group">
+                        <label for="retirementAgeInput">Retirement Age:</label>
+                        <input type="number" class="form-control" id="retirementAgeInput" placeholder="Enter retirement age">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register Employee</button>
+                </form>
+            </div>
+        </div>
+        <div class="row mb-3">
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="depositAmount">Deposit Amount (in ETH):</label>
                     <input type="text" class="form-control" id="depositAmount" placeholder="Enter deposit amount">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="lockDuration">Lock Duration (in seconds):</label>
-                    <input type="text" class="form-control" id="lockDuration" placeholder="Enter lock duration">
                 </div>
             </div>
         </div>

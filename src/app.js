@@ -6,6 +6,34 @@ const contractABI = [
       {
         "name": "",
         "type": "address"
+      }
+    ],
+    "name": "employees",
+    "outputs": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "age",
+        "type": "uint256"
+      },
+      {
+        "name": "retirementAge",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function",
+    "signature": "0xd0678947"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
       },
       {
         "name": "",
@@ -78,6 +106,49 @@ const contractABI = [
     "name": "Redeemed",
     "type": "event",
     "signature": "0xf3a670cd3af7d64b488926880889d08a8585a138ff455227af6737339a1ec262"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "name": "_age",
+        "type": "uint256"
+      },
+      {
+        "name": "_retirementAge",
+        "type": "uint256"
+      }
+    ],
+    "name": "registerEmployee",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "signature": "0x05b1dc28"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "isEmployeeRegistered",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function",
+    "signature": "0x9d88ebb6"
   },
   {
     "constant": false,
@@ -214,11 +285,9 @@ async function connectToEthereum() {
 
 connectToEthereum();
 
-
 async function connectContract() {
-    
-  const contractAddress = "0xD42d15690793e28d17AC0646ff2AFeB3E97070d8";
-  contract = new web3.eth.Contract(contractABI, contractAddress);
+    const contractAddress = "0x809F0fb88aE4F4009A01F72140A31728f6278a39";
+    contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
 connectContract();
@@ -227,16 +296,16 @@ connectContract();
 const connectWalletBtn = document.getElementById("connectWallet");
 const walletInfoDiv = document.getElementById("walletInfo");
 const depositAmountInput = document.getElementById("depositAmount");
-const lockDurationInput = document.getElementById("lockDuration");
 const depositBtn = document.getElementById("deposit");
 const depositInfoDiv = document.getElementById("depositInfo");
 const depositsContainer = document.getElementById("depositsContainer");
 const currentTimeDiv = document.getElementById("currentTime");
-
+const registerEmployeeForm = document.getElementById("registerEmployeeForm");
 
 // Event listeners
 connectWalletBtn.addEventListener("click", connectWallet);
 depositBtn.addEventListener("click", deposit);
+registerEmployeeForm.addEventListener("submit", registerEmployee);
 
 // Connect wallet function
 async function connectWallet() {
@@ -244,10 +313,50 @@ async function connectWallet() {
         accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         walletInfoDiv.innerHTML = `Connected wallet: ${accounts[0]}`;
         displayDeposits();
+        checkEmployeeRegistration();
     } catch (error) {
         console.error(error);
         walletInfoDiv.innerHTML = "Error connecting wallet";
     }
+}
+
+// Register employee function
+async function registerEmployee(event) {
+    event.preventDefault();
+    const name = document.getElementById("employeeName").value;
+    const age = parseInt(document.getElementById("employeeAge").value);
+    const retirementAge = parseInt(document.getElementById("retirementAge").value);
+
+    try {
+        await contract.methods
+            .registerEmployee(name, age, retirementAge)
+            .send({ from: accounts[0] });
+        alert("Employee registered successfully");
+        checkEmployeeRegistration();
+    } catch (error) {
+        console.error(error);
+        alert("Error registering employee");
+    }
+}
+
+// Check if employee is registered
+async function checkEmployeeRegistration() {
+  if (!accounts || accounts.length === 0) {
+      return;
+  }
+
+  const isRegistered = await contract.methods.isEmployeeRegistered(accounts[0]).call();
+  if (isRegistered) {
+      registerEmployeeForm.style.display = "none";
+      const employee = await contract.methods.employees(accounts[0]).call();
+      document.getElementById("employeeName").textContent = employee.name;
+      document.getElementById("employeeAge").textContent = employee.age;
+      document.getElementById("retirementAge").textContent = employee.retirementAge;
+      document.getElementById("employeeInfo").style.display = "block";
+  } else {
+      registerEmployeeForm.style.display = "block";
+      document.getElementById("employeeInfo").style.display = "none";
+  }
 }
 
 // Deposit function
@@ -257,28 +366,13 @@ async function deposit() {
         return;
     }
 
-
     const depositAmount = web3.utils.toWei(depositAmountInput.value, "ether");
-    const lockDuration = lockDurationInput.value;
 
     try {
         const result = await contract.methods
             .deposit()
             .send({ from: accounts[0], value: depositAmount });
 
-
-        //depositIndex must be length - 1
-        const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
-        const depositIndex = depositLength - 1;
-        console.log("lockDuration: ", lockDuration, "depositIndex: ", depositIndex);
-
-        //lock the deposit
-        await contract.methods
-        .lock( depositIndex, lockDuration)
-        .send({ from: accounts[0] });
-        console.log("Locked deposit");
-
-        // depositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH at index ${depositIndex}`;
         displayDeposits();
     } catch (error) {
         console.error(error);

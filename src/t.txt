@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
 contract TimeLock {
+
+
     struct Deposit {
         uint256 amount;
         uint256 lockUntil;
@@ -14,6 +16,7 @@ contract TimeLock {
     function deposit() external payable {
         deposits[msg.sender].push(Deposit(msg.value, 0));
         emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, 0);
+
     }
 
     function lock(uint256 depositIndex, uint256 duration) external {
@@ -32,10 +35,31 @@ contract TimeLock {
         require(now >= deposit.lockUntil, "Still locked");
 
         uint256 amount = deposit.amount;
-        delete userDeposits[depositIndex];
+
+        // Remove the deposit (Shift Later Elements)
+        for (uint i = depositIndex; i < userDeposits.length - 1; i++) {
+            userDeposits[i] = userDeposits[i + 1];
+        }
+
+        // Delete the last element (now a duplicate)
+        userDeposits.pop();  
 
         msg.sender.transfer(amount);
 
         emit Redeemed(msg.sender, amount, depositIndex);
+    }
+
+    function getDepositLength(address account) public view returns (uint256) {
+        return deposits[account].length;
+    }
+
+    function getDepositAmount(address account, uint256 index) public view returns (uint256) {
+        Deposit storage deposit = deposits[account][index];
+        return deposit.amount;
+    }
+
+    function getDepositLockUntil(address account, uint256 index) public view returns (uint256) {
+        Deposit storage deposit = deposits[account][index];
+        return deposit.lockUntil;
     }
 }
