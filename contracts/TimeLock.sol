@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 contract TimeLock {
     struct Employee {
         string name;
-        uint256 age;
+        uint256 birthdate; // Change to birthdate instead of age
         uint256 retirementAge;
     }
 
@@ -18,9 +18,9 @@ contract TimeLock {
     event Deposited(address indexed account, uint256 index, uint256 amount, uint256 lockUntil);
     event Redeemed(address indexed account, uint256 amount, uint256 depositIndex);
 
-    function registerEmployee(string memory _name, uint256 _age, uint256 _retirementAge) public {
+    function registerEmployee(string memory _name, uint256 _birthdate, uint256 _retirementAge) public {
         require(!isEmployeeRegistered(msg.sender), "Employee already registered");
-        employees[msg.sender] = Employee(_name, _age, _retirementAge);
+        employees[msg.sender] = Employee(_name, _birthdate, _retirementAge);
     }
 
     function isEmployeeRegistered(address account) public view returns (bool) {
@@ -29,24 +29,23 @@ contract TimeLock {
 
     function deposit() external payable {
         require(isEmployeeRegistered(msg.sender), "Employee not registered");
-        uint256 lockUntil = calculateRetirementTimestamp(msg.sender);
-        deposits[msg.sender].push(Deposit(msg.value, lockUntil));
-        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, lockUntil);
+        deposits[msg.sender].push(Deposit(msg.value, 0));
+        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, 0);
     }
 
-    function calculateRetirementTimestamp(address account) private view returns (uint256) {
-        uint256 ageInSeconds = employees[account].age * 365 days;
+     function calculateRetirementTimestamp(address account) public view returns (uint256) {
+        uint256 birthdateInSeconds = employees[account].birthdate;
         uint256 retirementAgeInSeconds = employees[account].retirementAge * 365 days;
-        return now + retirementAgeInSeconds - ageInSeconds;
+        return birthdateInSeconds + retirementAgeInSeconds;
     }
 
 
-    function lock(uint256 depositIndex, uint256 duration) external {
+    function lock(uint256 depositIndex, uint256 period) external {
         Deposit[] storage userDeposits = deposits[msg.sender];
         require(depositIndex < userDeposits.length, "Invalid deposit index");
         require(userDeposits[depositIndex].lockUntil == 0, "Already locked");
 
-        userDeposits[depositIndex].lockUntil = now + duration;
+        userDeposits[depositIndex].lockUntil = period;
     }
 
     function redeem(uint256 depositIndex) external {

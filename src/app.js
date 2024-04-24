@@ -15,7 +15,7 @@ const contractABI = [
         "type": "string"
       },
       {
-        "name": "age",
+        "name": "birthdate",
         "type": "uint256"
       },
       {
@@ -115,7 +115,7 @@ const contractABI = [
         "type": "string"
       },
       {
-        "name": "_age",
+        "name": "_birthdate",
         "type": "uint256"
       },
       {
@@ -161,6 +161,26 @@ const contractABI = [
     "signature": "0xd0e30db0"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "calculateRetirementTimestamp",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function",
+    "signature": "0x9bbc5133"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -168,7 +188,7 @@ const contractABI = [
         "type": "uint256"
       },
       {
-        "name": "duration",
+        "name": "period",
         "type": "uint256"
       }
     ],
@@ -286,7 +306,7 @@ async function connectToEthereum() {
 connectToEthereum();
 
 async function connectContract() {
-    const contractAddress = "0x809F0fb88aE4F4009A01F72140A31728f6278a39";
+    const contractAddress = "0x45e8D8EB959B21B96b80bA21aA2451f69B9D6715";
     contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
@@ -322,21 +342,23 @@ async function connectWallet() {
 
 // Register employee function
 async function registerEmployee(event) {
-    event.preventDefault();
-    const name = document.getElementById("employeeName").value;
-    const age = parseInt(document.getElementById("employeeAge").value);
-    const retirementAge = parseInt(document.getElementById("retirementAge").value);
-
-    try {
-        await contract.methods
-            .registerEmployee(name, age, retirementAge)
-            .send({ from: accounts[0] });
-        alert("Employee registered successfully");
-        checkEmployeeRegistration();
-    } catch (error) {
-        console.error(error);
-        alert("Error registering employee");
-    }
+  event.preventDefault();
+  const name = document.getElementById("employeeNameInput").value;
+  let birthdate = new Date(document.getElementById("birthdateInput").value);
+  birthdate.setHours(0, 0, 0, 0); // Ensure time is 00:00 IST
+  const birthdateTimestamp = birthdate.getTime() / 1000;
+  const retirementAge = parseInt(document.getElementById("retirementAgeInput").value);
+  console.log("Registering employee", name, birthdate, retirementAge);
+  try {
+      await contract.methods
+          .registerEmployee(name, birthdateTimestamp, retirementAge)
+          .send({ from: accounts[0] });
+      alert("Employee registered successfully");
+      checkEmployeeRegistration();
+  } catch (error) {
+      console.error(error);
+      alert("Error registering employee");
+  }
 }
 
 // Check if employee is registered
@@ -350,7 +372,8 @@ async function checkEmployeeRegistration() {
       registerEmployeeForm.style.display = "none";
       const employee = await contract.methods.employees(accounts[0]).call();
       document.getElementById("employeeName").textContent = employee.name;
-      document.getElementById("employeeAge").textContent = employee.age;
+      const birthdateStr = new Date(employee.birthdate * 1000).toLocaleDateString();
+      document.getElementById("employeeBirthDate").textContent = birthdateStr;
       document.getElementById("retirementAge").textContent = employee.retirementAge;
       document.getElementById("employeeInfo").style.display = "block";
   } else {
@@ -369,9 +392,37 @@ async function deposit() {
     const depositAmount = web3.utils.toWei(depositAmountInput.value, "ether");
 
     try {
+        console.log("Depositing", depositAmount);
         const result = await contract.methods
             .deposit()
             .send({ from: accounts[0], value: depositAmount });
+
+        //lock the deposit 
+        //depositIndex must be length - 1
+        const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
+        const depositIndex = depositLength - 1;
+        const employee = await contract.methods.employees(accounts[0]).call();
+        const birthDate = employee.birthdate;
+        console.log("birthDate: ", birthDate);
+        const retirementAge = Number(employee.retirementAge);
+        // calculate the lock time by adding years to the birthdate without using sol function
+        const birthDateObj = new Date(birthDate * 1000);
+        console.log("birthDateObj: ", birthDateObj.toLocaleString());
+        const retirementDate = new Date(birthDate*1000);
+        let byear = retirementDate.getFullYear();
+        let retYear = byear + retirementAge;
+        retirementDate.setFullYear(retYear);
+        console.log( typeof retirementAge, typeof byear, typeof retYear)
+
+        console.log("retirementDate: ", retirementDate.toLocaleString(), "Birthdate: ", birthDateObj.toLocaleString());
+        const locktill = Math.floor(retirementDate.getTime() / 1000);
+
+        console.log("locktill: ", locktill);
+        //lock the deposit
+        await contract.methods
+        .lock( depositIndex, locktill)
+        .send({ from: accounts[0] });
+        console.log("Locked deposit");
 
         displayDeposits();
     } catch (error) {
