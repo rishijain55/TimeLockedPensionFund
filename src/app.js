@@ -339,7 +339,7 @@ async function connectToEthereum() {
 connectToEthereum();
 
 async function connectContract() {
-    const contractAddress = "0xc2f5475cf36b41Bf700389349c8fb1F02a032E6B";
+    const contractAddress = "0xcB1e6A5343D5ADfC29b2a3b6e94Ed4Be79b2C326";
     contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 

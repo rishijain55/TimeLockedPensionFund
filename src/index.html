@@ -33,11 +33,14 @@
             border-color: #1a237e;
         }
 
+        h1 {
+            color: black; /* Change 'blue' to any color you prefer */
+        }
         .btn-primary:hover {
             background-color: #151c64;
             border-color: #151c64;
         }
-
+        
         .credentials-container {
             /* box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2); */
             background-color: #d1ecf1;
@@ -91,10 +94,10 @@
 </head>
 <body>
     <div class="container py-5">
-        <h1 class="text-center mb-5 text-primary">Time-Locked Pension Fund</h1>
+        <h1 class="text-center">Time-Locked Pension Fund</h1>
         <div class="row mb-3">
             <div class="col-12">
-                <div class="alert alert-info" id="currentTime"></div>
+                <div class="alert alert-info text-center" id="currentTime"></div>
             </div>
         </div>
         <div class="row mb-3">
@@ -160,14 +163,14 @@
         </div>
         <div class="row mb-2">
             <div class="col">
-                <h4 class="text-primary mb-3">Pension Deposits</h4>
+                <h4 class="text-primary mb-3 text-center">Pension Deposits</h4>
                 <div id="depositsContainer" class="row"></div>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-12">
-                <h4 class="text-primary">Personal Funds</h4>
+                <h1 class="text-center">Personal Funds</h1>
             </div>
         </div>
         <div class="row mb-3">
@@ -200,9 +203,9 @@
                 <div id="personalDepositInfo"></div>
             </div>
         </div>
-        <div class="row">
-            <div >
-                <h4 class="text-primary mb-3">Personal Deposits</h4>
+        <div class="row mb-2">
+            <div class="col">
+                <h4 class="text-primary text-center">Personal Deposits</h4>
                 <div id="personalDepositsContainer" class="row"></div>
             </div>
         </div>
