@@ -7,15 +7,71 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
     <script src="app.js" defer></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .bg-primary {
+            background-color: #1a237e !important;
+        }
+
+        .text-primary {
+            color: #1a237e !important;
+        }
+
+        .btn-primary {
+            background-color: #1a237e;
+            border-color: #1a237e;
+        }
+
+        .btn-primary:hover {
+            background-color: #151c64;
+            border-color: #151c64;
+        }
+
+        .card-columns { 
+            column-count: 3; /* Divide into 3 columns */
+            column-gap: 20px; /* Add space between columns */
+        }
+
+        .card {
+            width: 100%; /* Allow cards to fill their column */
+            margin-bottom: 20px; /* Spacing between cards in a column */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .card-columns {
+                column-count: 2; /* Switch to 2 columns */
+            }
+        }
+
+        @media (max-width: 576px) {
+            .card-columns {
+                column-count: 1;  /* 1 column for smallest screens */
+            }
+        }
+        .card:hover {
+            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            color: #1a237e;
+        }
+
+        .form-control:focus {
+            border-color: #90caf9;
+            box-shadow: 0 0 0 0.2rem rgba(144, 202, 249, 0.25);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center mb-4">Time-Locked Pension Fund</h1>
+    <div class="container py-5">
+        <h1 class="text-center mb-5 text-primary">Time-Locked Pension Fund</h1>
         <div class="row mb-3">
             <div class="col-12">
                 <div class="alert alert-info" id="currentTime"></div>
@@ -31,29 +87,29 @@
                 <div id="walletInfo"></div>
             </div>
         </div>
-        <div class="row mb-3">
+        <div class="row mb-5">
             <div class="col-12">
                 <div id="employeeInfo" style="display: none;">
-                    <h4>Employee Credentials:</h4>
+                    <h4 class="text-primary">Employee Credentials:</h4>
                     <p><strong>Name:</strong> <span id="employeeName"></span></p>
                     <p><strong>Birthdate:</strong> <span id="employeeBirthDate"></span></p>
                     <p><strong>Retirement Age:</strong> <span id="retirementAge"></span></p>
                 </div>
             </div>
         </div>
-        <div class="row mb-3">
+        <div class="row mb-5">
             <div class="col-12">
                 <form id="registerEmployeeForm">
                     <div class="form-group">
-                        <label for="employeeNameInput">Employee Name:</label>
+                        <label for="employeeNameInput" class="text-primary">Employee Name:</label>
                         <input type="text" class="form-control" id="employeeNameInput" placeholder="Enter employee name">
                     </div>
                     <div class="form-group">
-                        <label for="birthdateInput">Employee Birthdate:</label>
+                        <label for="birthdateInput" class="text-primary">Employee Birthdate:</label>
                         <input type="date" class="form-control" id="birthdateInput" placeholder="Enter employee birthdate">
                     </div>
                     <div class="form-group">
-                        <label for="retirementAgeInput">Retirement Age:</label>
+                        <label for="retirementAgeInput" class="text-primary">Retirement Age:</label>
                         <input type="number" class="form-control" id="retirementAgeInput" placeholder="Enter retirement age">
                     </div>
                     <button type="submit" class="btn btn-primary">Register Employee</button>
@@ -63,14 +119,14 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="depositAmount">Deposit Amount (in ETH):</label>
+                    <label for="depositAmount" class="text-primary">Deposit Amount (in ETH):</label>
                     <input type="text" class="form-control" id="depositAmount" placeholder="Enter deposit amount">
                 </div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-12">
-                <button class="btn btn-success" id="deposit">Deposit</button>
+                <button class="btn btn-primary" id="deposit">Deposit</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -78,41 +134,41 @@
                 <div id="depositInfo"></div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div id="depositsContainer"></div>
+        <div class="row mb-2">
+            <div>
+                <h4 class="text-primary mb-3">Pension Deposits</h4>
+                <div id="depositsContainer" class="card-columns"></div>
             </div>
         </div>
 
-        <!-- Add this section after the existing deposit section -->
         <div class="row mb-3">
             <div class="col-12">
-                <h4>Personal Funds</h4>
+                <h4 class="text-primary">Personal Funds</h4>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="personalDepositAmount">Deposit Amount (in ETH):</label>
+                    <label for="personalDepositAmount" class="text-primary">Deposit Amount (in ETH):</label>
                     <input type="text" class="form-control" id="personalDepositAmount" placeholder="Enter deposit amount">
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="personalRedeemDate">Redeem Date:</label>
+                    <label for="personalRedeemDate" class="text-primary">Redeem Date:</label>
                     <input type="date" class="form-control" id="personalRedeemDate">
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="personalRedeemTime">Redeem Time:</label>
+                    <label for="personalRedeemTime" class="text-primary">Redeem Time:</label>
                     <input type="time" class="form-control" id="personalRedeemTime">
                 </div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-12">
-                <button class="btn btn-success" id="personalDeposit">Deposit</button>
+                <button class="btn btn-primary" id="personalDeposit">Deposit</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -121,8 +177,9 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-12">
-                <div id="personalDepositsContainer"></div>
+            <div >
+                <h4 class="text-primary mb-3">Personal Deposits</h4>
+                <div id="personalDepositsContainer" class="card-columns"></div>
             </div>
         </div>
     </div>
