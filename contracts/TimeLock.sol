@@ -65,9 +65,7 @@ contract TimeLock {
 
         // Delete the last element (now a duplicate)
         userDeposits.pop();  
-
         msg.sender.transfer(amount);
-
         emit Redeemed(msg.sender, amount, depositIndex);
     }
 
