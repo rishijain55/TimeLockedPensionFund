@@ -3,30 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time-Locked Deposits</title>
+    <title>Time-Locked Pension Fund</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
     <script src="app.js" defer></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Time-Locked Pension Fund</h1>
-    <div>
-        <!-- display current time -->
-        <div id="currentTime"></div>
+    <div class="container">
+        <h1 class="text-center mb-4">Time-Locked Pension Fund</h1>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-info" id="currentTime"></div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-primary" id="connectWallet">Connect Wallet</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="walletInfo"></div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="depositAmount">Deposit Amount (in ETH):</label>
+                    <input type="text" class="form-control" id="depositAmount" placeholder="Enter deposit amount">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="lockDuration">Lock Duration (in seconds):</label>
+                    <input type="text" class="form-control" id="lockDuration" placeholder="Enter lock duration">
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-success" id="deposit">Deposit</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="depositInfo"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="depositsContainer"></div>
+            </div>
+        </div>
     </div>
-    <div>
-        <button id="connectWallet">Connect Wallet</button>
-    </div>
-    <div id="walletInfo"></div>
-    <div>
-        <label for="depositAmount">Deposit Amount (in ETH):</label>
-        <input type="text" id="depositAmount" placeholder="Enter deposit amount">
-    </div>
-    <div>
-        <label for="lockDuration">Lock Duration (in seconds):</label>
-        <input type="text" id="lockDuration" placeholder="Enter lock duration">
-    </div>
-    <button id="deposit">Deposit</button>
-    <div id="depositInfo"></div>
-    <div id="depositsContainer"></div>
 </body>
 </html>
