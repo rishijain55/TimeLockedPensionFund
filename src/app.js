@@ -339,7 +339,7 @@ async function connectToEthereum() {
 connectToEthereum();
 
 async function connectContract() {
-    const contractAddress = "0xB7A941Ab2Ee915c159f7dAE1386e9C583B827eBd";
+    const contractAddress = "0xc2f5475cf36b41Bf700389349c8fb1F02a032E6B";
     contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
@@ -630,11 +630,11 @@ async function personalDeposit() {
         depositIndex = depositIndex - 1;
         console.log("Depositing", depositAmount, "lockUntil", lockUntil, "depositIndex", depositIndex);
         await contract.methods.lock(depositIndex, lockUntil).send({ from: accounts[0] });
-        personalDepositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH. Locked until ${redeemDateTime.toLocaleString()}`;
+        // personalDepositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH. Locked until ${redeemDateTime.toLocaleString()}`;
         displayPersonalDeposits();
     } catch (error) {
         console.error(error);
-        personalDepositInfoDiv.innerHTML = "Error depositing personal funds";
+        // personalDepositInfoDiv.innerHTML = "Error depositing personal funds";
     }
 }
 
