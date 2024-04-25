@@ -1,4 +1,10 @@
 // Replace with your contract ABI
+async function connectContract() {
+  const contractAddress = "0x16a747f2b73AEe34F0eb89847cD1e771fC9F1c56";
+  contract = new web3.eth.Contract(contractABI, contractAddress);
+}
+
+
 const contractABI = [
   {
     "constant": true,
@@ -338,10 +344,6 @@ async function connectToEthereum() {
 
 connectToEthereum();
 
-async function connectContract() {
-    const contractAddress = "0x042b8a9e40d17980c70ac1ecee383f575c855c0a";
-    contract = new web3.eth.Contract(contractABI, contractAddress);
-}
 
 connectContract();
 
@@ -357,7 +359,7 @@ const registerEmployeeForm = document.getElementById("registerEmployeeForm");
 
 // Event listeners
 connectWalletBtn.addEventListener("click", connectWallet);
-depositBtn.addEventListener("click", deposit);
+depositBtn.addEventListener("click", depositPF);
 registerEmployeeForm.addEventListener("submit", registerEmployee);
 
 // Connect wallet function
@@ -417,7 +419,7 @@ async function checkEmployeeRegistration() {
 }
 
 // Deposit function
-async function deposit() {
+async function depositPF() {
     if (!accounts || accounts.length === 0) {
         alert("Please connect your wallet first!");
         return;
@@ -433,9 +435,12 @@ async function deposit() {
 
         //lock the deposit 
         //depositIndex must be length - 1
+        console.log("Deposited", depositAmount);
         const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
         const depositIndex = depositLength - 1;
+        console.log("depositIndex: ", depositIndex);
         const employee = await contract.methods.employees(accounts[0]).call();
+        console.log("employee: ", employee);
         const birthDate = employee.birthdate;
         console.log("birthDate: ", birthDate);
         const retirementAge = Number(employee.retirementAge);
