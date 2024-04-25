@@ -28,18 +28,59 @@ contract TimeLock {
         return employees[account].retirementAge != 0;
     }
 
-    function deposit(bool pension) external payable {
-        require(isEmployeeRegistered(msg.sender), "Employee not registered");
-        deposits[msg.sender].push(Deposit(msg.value, 0, pension));
-        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, 0);
+
+    function incrementYear(uint256 timestamp) public pure returns (uint256) {
+        uint256 secondsInYear;
+
+        // Check if the current year (derived from timestamp) is a leap year
+        if (isLeapYear(timestamp)) {
+            secondsInYear = 31622400; // Seconds in a leap year
+        } else {
+            secondsInYear = 31536000; // Seconds in a regular year
+        }
+
+        return timestamp + secondsInYear;
     }
 
-     function calculateRetirementTimestamp(address account) public view returns (uint256) {
+    // Helper function to determine leap year
+    function isLeapYear(uint256 timestamp) private pure returns (bool) {
+        uint256 year = getYear(timestamp);
+        return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
+    }
+
+    // Helper function to extract year from timestamp 
+    function getYear(uint256 timestamp) private pure returns (uint256) {
+        return 1970 + timestamp / 31536000;  // Approximation, assumes all years have the same length
+    }
+
+    function calculateRetirementTimestamp(address account) public view returns (uint256) {
         uint256 birthdateInSeconds = employees[account].birthdate;
-        uint256 retirementAgeInSeconds = employees[account].retirementAge * 365 days;
-        return birthdateInSeconds + retirementAgeInSeconds;
+        uint256 retirementAge = employees[account].retirementAge;
+
+        // Start with the initial birthdate timestamp
+        uint256 currentTimestamp = birthdateInSeconds; 
+
+        // Increment the timestamp year by year until retirement age is reached
+        for (uint256 i = 0; i < retirementAge; i++) {
+            currentTimestamp = incrementYear(currentTimestamp); 
+        }
+
+        return currentTimestamp; 
     }
 
+    function depositPension() external payable {
+        require(isEmployeeRegistered(msg.sender), "Employee not registered");
+        //calculateRetirementTimestamp
+        uint256 retirementTimestamp = calculateRetirementTimestamp(msg.sender);
+        deposits[msg.sender].push(Deposit(msg.value, retirementTimestamp, true));
+        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value, retirementTimestamp);
+    }
+
+    function deposit(bool pension, uint256 lockUntil) external payable {
+        require(isEmployeeRegistered(msg.sender), "Employee not registered");
+        deposits[msg.sender].push(Deposit(msg.value,lockUntil, pension));
+        emit Deposited(msg.sender, deposits[msg.sender].length - 1, msg.value,lockUntil);
+    }
 
     function lock(uint256 depositIndex, uint256 period) external {
         Deposit[] storage userDeposits = deposits[msg.sender];

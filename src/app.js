@@ -1,6 +1,6 @@
 // Replace with your contract ABI
 async function connectContract() {
-  const contractAddress = "0x16a747f2b73AEe34F0eb89847cD1e771fC9F1c56";
+  const contractAddress = "0x7Fe92E23D4611eB77027B0B6A5fd95C30173DD19";
   contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
@@ -161,19 +161,24 @@ const contractABI = [
     "signature": "0x9d88ebb6"
   },
   {
-    "constant": false,
+    "constant": true,
     "inputs": [
       {
-        "name": "pension",
-        "type": "bool"
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
-    "name": "deposit",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
+    "name": "incrementYear",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
     "type": "function",
-    "signature": "0xc57273c2"
+    "signature": "0x4faba52b"
   },
   {
     "constant": true,
@@ -194,6 +199,35 @@ const contractABI = [
     "stateMutability": "view",
     "type": "function",
     "signature": "0x9bbc5133"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "depositPension",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function",
+    "signature": "0x1b544399"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pension",
+        "type": "bool"
+      },
+      {
+        "name": "lockUntil",
+        "type": "uint256"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function",
+    "signature": "0xb3950de1"
   },
   {
     "constant": false,
@@ -429,39 +463,41 @@ async function depositPF() {
 
     try {
         console.log("Depositing", depositAmount);
-        const result = await contract.methods
-            .deposit(true)
-            .send({ from: accounts[0], value: depositAmount });
 
-        //lock the deposit 
-        //depositIndex must be length - 1
-        console.log("Deposited", depositAmount);
-        const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
-        const depositIndex = depositLength - 1;
-        console.log("depositIndex: ", depositIndex);
-        const employee = await contract.methods.employees(accounts[0]).call();
-        console.log("employee: ", employee);
-        const birthDate = employee.birthdate;
-        console.log("birthDate: ", birthDate);
-        const retirementAge = Number(employee.retirementAge);
-        // calculate the lock time by adding years to the birthdate without using sol function
-        const birthDateObj = new Date(birthDate * 1000);
-        console.log("birthDateObj: ", birthDateObj.toLocaleString());
-        const retirementDate = new Date(birthDate*1000);
-        let byear = retirementDate.getFullYear();
-        let retYear = byear + retirementAge;
-        retirementDate.setFullYear(retYear);
-        console.log( typeof retirementAge, typeof byear, typeof retYear)
+        const result = await contract.methods.depositPension().send({ from: accounts[0], value: depositAmount });
+        // const result = await contract.methods
+        //     .deposit(true)
+        //     .send({ from: accounts[0], value: depositAmount });
 
-        console.log("retirementDate: ", retirementDate.toLocaleString(), "Birthdate: ", birthDateObj.toLocaleString());
-        const locktill = Math.floor(retirementDate.getTime() / 1000);
+        // //lock the deposit 
+        // //depositIndex must be length - 1
+        // console.log("Deposited", depositAmount);
+        // const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
+        // const depositIndex = depositLength - 1;
+        // console.log("depositIndex: ", depositIndex);
+        // const employee = await contract.methods.employees(accounts[0]).call();
+        // console.log("employee: ", employee);
+        // const birthDate = employee.birthdate;
+        // console.log("birthDate: ", birthDate);
+        // const retirementAge = Number(employee.retirementAge);
+        // // calculate the lock time by adding years to the birthdate without using sol function
+        // const birthDateObj = new Date(birthDate * 1000);
+        // console.log("birthDateObj: ", birthDateObj.toLocaleString());
+        // const retirementDate = new Date(birthDate*1000);
+        // let byear = retirementDate.getFullYear();
+        // let retYear = byear + retirementAge;
+        // retirementDate.setFullYear(retYear);
+        // console.log( typeof retirementAge, typeof byear, typeof retYear)
 
-        console.log("locktill: ", locktill);
-        //lock the deposit
-        await contract.methods
-        .lock( depositIndex, locktill)
-        .send({ from: accounts[0] });
-        console.log("Locked deposit");
+        // console.log("retirementDate: ", retirementDate.toLocaleString(), "Birthdate: ", birthDateObj.toLocaleString());
+        // const locktill = Math.floor(retirementDate.getTime() / 1000);
+
+        // console.log("locktill: ", locktill);
+        // //lock the deposit
+        // await contract.methods
+        // .lock( depositIndex, locktill)
+        // .send({ from: accounts[0] });
+        // console.log("Locked deposit");
 
         displayDeposits();
     } catch (error) {
@@ -630,11 +666,11 @@ async function personalDeposit() {
 
     try {
 
-        const result = await contract.methods.deposit(false).send({ from: accounts[0], value: depositAmount });
-        let depositIndex = await contract.methods.getDepositLength(accounts[0]).call();
-        depositIndex = depositIndex - 1;
-        console.log("Depositing", depositAmount, "lockUntil", lockUntil, "depositIndex", depositIndex);
-        await contract.methods.lock(depositIndex, lockUntil).send({ from: accounts[0] });
+        const result = await contract.methods.deposit(false, lockUntil).send({ from: accounts[0], value: depositAmount});
+        // let depositIndex = await contract.methods.getDepositLength(accounts[0]).call();
+        // depositIndex = depositIndex - 1;
+        // console.log("Depositing", depositAmount, "lockUntil", lockUntil, "depositIndex", depositIndex);
+        // await contract.methods.lock(depositIndex, lockUntil).send({ from: accounts[0] });
         // personalDepositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH. Locked until ${redeemDateTime.toLocaleString()}`;
         displayPersonalDeposits();
     } catch (error) {
