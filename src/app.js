@@ -1,6 +1,6 @@
 // Replace with your contract ABI
 async function connectContract() {
-  const contractAddress = "0x7Fe92E23D4611eB77027B0B6A5fd95C30173DD19";
+  const contractAddress = "0x834fca306466a675a076a2b647fc526b71004a7c";
   contract = new web3.eth.Contract(contractABI, contractAddress);
 }
 
@@ -465,39 +465,6 @@ async function depositPF() {
         console.log("Depositing", depositAmount);
 
         const result = await contract.methods.depositPension().send({ from: accounts[0], value: depositAmount });
-        // const result = await contract.methods
-        //     .deposit(true)
-        //     .send({ from: accounts[0], value: depositAmount });
-
-        // //lock the deposit 
-        // //depositIndex must be length - 1
-        // console.log("Deposited", depositAmount);
-        // const depositLength = await contract.methods.getDepositLength(accounts[0]).call();
-        // const depositIndex = depositLength - 1;
-        // console.log("depositIndex: ", depositIndex);
-        // const employee = await contract.methods.employees(accounts[0]).call();
-        // console.log("employee: ", employee);
-        // const birthDate = employee.birthdate;
-        // console.log("birthDate: ", birthDate);
-        // const retirementAge = Number(employee.retirementAge);
-        // // calculate the lock time by adding years to the birthdate without using sol function
-        // const birthDateObj = new Date(birthDate * 1000);
-        // console.log("birthDateObj: ", birthDateObj.toLocaleString());
-        // const retirementDate = new Date(birthDate*1000);
-        // let byear = retirementDate.getFullYear();
-        // let retYear = byear + retirementAge;
-        // retirementDate.setFullYear(retYear);
-        // console.log( typeof retirementAge, typeof byear, typeof retYear)
-
-        // console.log("retirementDate: ", retirementDate.toLocaleString(), "Birthdate: ", birthDateObj.toLocaleString());
-        // const locktill = Math.floor(retirementDate.getTime() / 1000);
-
-        // console.log("locktill: ", locktill);
-        // //lock the deposit
-        // await contract.methods
-        // .lock( depositIndex, locktill)
-        // .send({ from: accounts[0] });
-        // console.log("Locked deposit");
 
         displayDeposits();
     } catch (error) {
@@ -667,70 +634,12 @@ async function personalDeposit() {
     try {
 
         const result = await contract.methods.deposit(false, lockUntil).send({ from: accounts[0], value: depositAmount});
-        // let depositIndex = await contract.methods.getDepositLength(accounts[0]).call();
-        // depositIndex = depositIndex - 1;
-        // console.log("Depositing", depositAmount, "lockUntil", lockUntil, "depositIndex", depositIndex);
-        // await contract.methods.lock(depositIndex, lockUntil).send({ from: accounts[0] });
-        // personalDepositInfoDiv.innerHTML = `Deposited ${web3.utils.fromWei(depositAmount, "ether")} ETH. Locked until ${redeemDateTime.toLocaleString()}`;
         displayPersonalDeposits();
     } catch (error) {
         console.error(error);
-        // personalDepositInfoDiv.innerHTML = "Error depositing personal funds";
     }
 }
 
-// // Display personal deposits function
-// async function displayPersonalDeposits() {
-//     if (!accounts || accounts.length === 0) {
-//         alert("Please connect your wallet first!");
-//         return;
-//     }
-
-//     if (!contract) {
-//         alert("Please deploy the contract first!");
-//         return;
-//     }
-
-//     personalDepositsContainer.innerHTML = ""; // Clear previous deposits
-
-//     try {
-//         const userDepositsLength = await contract.methods.getDepositLength(accounts[0]).call();
-//         if (userDepositsLength === 0) {
-//             personalDepositsContainer.innerHTML = "No personal deposits found.";
-//             return;
-//         }
-
-//         const depositsList = document.createElement("ul");
-
-//         for (let i = 0; i < userDepositsLength; i++) {
-//             const depositAmount = await contract.methods.getDepositAmount(accounts[0], i).call();
-//             const depositLockUntil = await contract.methods.getDepositLockUntil(accounts[0], i).call();
-//             let pension = await contract.methods.isDepositPensionRelated(accounts[0], i).call();
-
-//             //continue if the deposit is pension related
-//             if (pension) {
-//                 continue;
-//             }
-
-//             const depositItem = document.createElement("li");
-//             depositItem.textContent = `Personal Deposit ${i}: Amount: ${web3.utils.fromWei(depositAmount, "ether")} ETH, Unlock Time: ${new Date(depositLockUntil * 1000).toLocaleString()}`;
-
-//             const redeemBtn = document.createElement("button");
-//             redeemBtn.textContent = "Redeem";
-//             redeemBtn.addEventListener("click", () => redeem(i));
-
-//             depositItem.appendChild(document.createTextNode(" "));
-//             depositItem.appendChild(redeemBtn);
-
-//             depositsList.appendChild(depositItem);
-//         }
-
-//         personalDepositsContainer.appendChild(depositsList);
-//     } catch (error) {
-//         console.error(error);
-//         personalDepositsContainer.innerHTML = "Error retrieving personal deposits";
-//     }
-// }
 
 async function displayPersonalDeposits() {
   console.log("Displaying deposits")
